@@ -1,29 +1,25 @@
 <!DOCTYPE>
 <html lang="id">
-
 <head>
-	<title>Table of Population with JSON</title>
 	<meta charset="UTF-8">
-	<link rel="shortcut icon" href="favicon.ico" />
-	<link rel="stylesheet" type="text/css" href="bootstrap.min.css" />
-	<link rel="stylesheet" href="./chart.min.css" />
-	<script src="./chart.min.js"></script>
+    <link rel="shortcut icon" href="favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="./bootstrap.min.css"/>
+    <link rel="stylesheet" href="./chart.min.css"/>
+    <script src="./chart.min.js"></script>
 	<script src="./angular.min.js"></script>
 </head>
-
 <body ng-app="myApps">
 	<div class="container">
 		<br>
 		<h1 class="text-center">Table of Population using JSON</h1>
-		<hr />
+		<hr/>
 		<h3 class="text-center">Top 10 Most Population</h3>
 		<br>
 		<canvas id="myChart" class="vpn-charts"></canvas>
-		<br />
-		<br />
+		<br/>
+		<br/>
 		<div ng-controller="datatableController">
-			<table class="table table-bordered table-striped table-hover" width="100%" border="1" cellpadding="5"
-				cellspacing="0">
+			<table class="table table-bordered table-striped table-hover" width="100%" border="1" cellpadding="5" cellspacing="0">
 				<thead class="bg-success text-light">
 					<tr>
 						<th>Rank</th>
@@ -43,124 +39,127 @@
 			</table>
 		</div>
 	</div>
-	<script>
+<script>
 
-		// Chart JS Start Here
 
-		var dataJson = [];
-		var dataLabel = [];
-		var dataPopulation = [];
-		var dataRank = [];
-		var dataWorld = [];
-		var dataColor = [];
-
-		fetch("worldpopulation.json")
-			.then(response => response.json())
-			.then(data => {
-				dataJson = data;
-
-				var dynamicColors = function () {
-					var o = Math.round, r = Math.random, s = 255;
-					return 'rgba(' + o(r() * s) + ',' + o(r() * s) + ',' + o(r() * s) + ',' + r().toFixed(1) + ')';
-				};
-
-				var loop = 10;//dataJson.length;	//Gunakan dataJson.length untuk load seluruh data json ke dalam chart		
-				for (var i = 0; i < loop; i++) {
-					dataLabel.push(dataJson[i]['country']);
-					dataPopulation.push(dataJson[i]['population']);
-					dataRank.push(dataJson[i]['Rank']);
-					dataWorld.push(dataJson[i]['World']);
-					dataColor.push(dynamicColors());
-				}
-
-				var ctx = document.getElementById('myChart');
-				ctx.height = 150; 									//Set Angka untuk tinggi chart
-				var myChart = new Chart(ctx, {
-					type: 'horizontalBar',
-					data: {
-						labels: dataLabel,
-						datasets: [
-							{
-								label: 'Population',
-								data: dataPopulation,
-								backgroundColor: dataColor,
-								borderWidth: 1
-							}
-						]
-					},
-					options: {
-						tooltips: {
-							callbacks: {
-								label: function (tooltipItem, data) {
+	// Chart JS Start Here
+	
+	
+	var dataJson = [];
+	var dataLabel = [];
+	var dataPopulation = [];
+	var dataRank = [];
+	var dataWorld = [];
+	var dataColor = [];
+	
+	fetch("worldpopulation.json")
+		.then(response => response.json())
+		.then(data => {
+			dataJson = data;
+			
+			var dynamicColors = function() {
+				var o = Math.round, r = Math.random, s = 255;
+				return 'rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + o(r()*s) + ',' + r().toFixed(1) + ')';
+			};
+			
+			var loop = 10;//dataJson.length;
+			for(var i = 0; i < loop; i++){
+				dataLabel.push(dataJson[i]['country']);
+				dataPopulation.push(dataJson[i]['population']);
+				dataRank.push(dataJson[i]['Rank']);
+				dataWorld.push(dataJson[i]['World']);
+				dataColor.push(dynamicColors());
+			}
+			
+			var ctx = document.getElementById('myChart');
+			var myChart = new Chart(ctx, {
+				type: 'horizontalBar',
+				data: {
+					labels: dataLabel,//['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+					datasets: [
+						{
+							label: 'Population',
+							data: dataPopulation,
+							backgroundColor: dataColor,
+							borderWidth: 1
+						}
+					]
+				},
+				options: {
+					tooltips: {
+						mode: 'index',
+						intersect: true,
+						callbacks: {
+							label: function(tooltipItem, data) {
+									var label = data.labels[tooltipItem.index];
+									console.log(label);
 									var value = data.datasets[0].data[tooltipItem.index];
 									value = value.toString();
 									value = value.split(/(?=(?:...)*$)/);
 									value = value.join(',');
-									return 'Population : ' + value;
-								}
-							} // end callbacks:
-						}, //end tooltips
-						legend: {
-							display: true
-						},
-						scales: {
-							yAxes: [{
-								ticks: {
-									beginAtZero: true,
-								}
-							}],
-							xAxes: [{
-								ticks: {
-									beginAtZero: true,
-									userCallback: function (value, index, values) {
-										// Convert the number to a string and splite the string every 3 charaters from the end
-										value = value.toString();
-										value = value.split(/(?=(?:...)*$)/);
-										value = value.join(',');
-										return value;
-									}
-								}
-							}]
+									return 'Population: '+value+ '.  World Share: '+(dataWorld[tooltipItem.index]*10).toFixed(2)+'%';
+							}
 						}
+					},
+					legend: {
+						display: false
+					},
+					scales: {
+						yAxes: [{
+							ticks: {
+								beginAtZero: true,
+							}
+						}],
+						xAxes: [{
+							ticks: {
+								beginAtZero: true,
+								userCallback: function(value, index, values) {
+									// Convert the number to a string and splite the string every 3 charaters from the end
+									value = value.toString();
+									value = value.split(/(?=(?:...)*$)/);
+									value = value.join(',');
+									return value;
+								}
+							}
+						}]
 					}
-				});
-
+				}
 			});
-
-
-		// Chart JS End Here
-
-
-
-		var app = angular.module("myApps", []);
-		app.controller("datatableController",
-			async function ($scope, $http) {
-				$scope.dataTableJson = [];
-				$http({
-					method: 'GET',
-					url: 'worldpopulation.json'
-				}).then(function successCallback(response) {
-
-					var datanya = response.data;
-					var loop = datanya.length;
-
-					function numberWithCommas(x) {
-						return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-					}
-
-					for (var i = 0; i < loop; i++) {
-						var populations = numberWithCommas(datanya[i]['population']);
-						$scope.dataTableJson.push({ country: datanya[i]['country'], population: populations, World: datanya[i]['World'], Rank: datanya[i]['Rank'] });
-					}
-
-				}, function errorCallback(response) {
-					console.log('Error load data');
-				});
-
-
-			}
-		);
-	</script>
+			
+		});
+		
+	
+	// Chart JS End Here
+		
+	
+	var app = angular.module("myApps", []);
+	app.controller("datatableController", 
+		async function($scope, $http){
+			$scope.dataTableJson = [];
+			$http({
+			  method: 'GET',
+			  url: 'worldpopulation.json'
+			}).then(function successCallback(response) {
+			
+				var datanya = response.data;
+				var loop = datanya.length;
+				
+				function numberWithCommas(x) {
+					return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+				}
+			
+				for(var i = 0; i < loop; i++){
+					var populations = numberWithCommas(datanya[i]['population']);
+					$scope.dataTableJson.push({country:datanya[i]['country'],population:populations,World:datanya[i]['World'],Rank:datanya[i]['Rank']});				
+				}
+				
+			}, function errorCallback(response) {
+				console.log('Error load data');
+			});  
+			
+			
+		}
+	);
+</script>
 </body>
-
 </html>
